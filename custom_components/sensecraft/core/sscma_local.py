@@ -1,7 +1,18 @@
 import logging
+
+from homeassistant.core import HomeAssistant
+
 from sscma.micro.client import Client
 from sscma.micro.device import Device
-from homeassistant.core import HomeAssistant
+from sscma.hook.supervision import ClassAnnotartor
+from sscma.utils.image import  (
+    image_from_base64,
+    image_to_base64
+)
+
+
+import supervision as sv
+
 from .mqtt_client import MQTTClient
 import threading
 from ..const import (
@@ -35,7 +46,16 @@ class SScmaLocal():
         self.connected = False
         self.connectEvent = threading.Event()
         self.classes = []
-
+        
+        self.tracker = sv.ByteTrack()
+        self.label_annotator = sv.LabelAnnotator(text_scale=0.4, text_padding=2)
+        self.box_annotator = sv.BoundingBoxAnnotator()
+        self.trace_annotator = sv.TraceAnnotator()
+        self.heat_map_annotator = sv.HeatMapAnnotator()
+        
+        self.trace = False
+        self.heatmap = False
+        
     def to_config(self):
         return {
             'device_name': self.deviceName,
@@ -147,7 +167,48 @@ class SScmaLocal():
                 self.hass.bus.fire(_event_type, {"value": counts[index]})
         
         if image is not None and self.stream_callback is not None:
-            self.stream_callback(image)
+            
+            frame = image_from_base64(image)
+            annotated_frame = frame.copy()
+            
+            if boxes is not None:
+                detections = sv.Detections.from_sscma_micro(message)
+                if self.trace:
+                    detections = self.tracker.update_with_detections(detections)
+                    labels = [
+                        f"#{tracker_id} {device.model.classes[class_id]}:{confidence:.2f}"
+                            for class_id, tracker_id, confidence 
+                            in zip(detections.class_id, detections.tracker_id, detections.confidence)
+                        ]
+                else:
+                    labels = [
+                    f"{device.model.classes[class_id]}:{confidence:.2f}"
+                        for class_id, confidence
+                        in zip(detections.class_id, detections.confidence)
+                    ] 
+                    
+                annotated_frame = self.box_annotator.annotate(
+                        annotated_frame, detections=detections)
+                
+                annotated_frame = self.label_annotator.annotate(
+                        annotated_frame, detections=detections, labels=labels)
+                
+                if self.trace:
+                    annotated_frame = self.trace_annotator.annotate(
+                            annotated_frame, detections=detections)
+                
+                if self.heatmap:
+                    annotated_frame = self.heat_map_annotator.annotate(
+                                annotated_frame, detections=detections)
+            
+            if classes is not None:
+                classifications  = sv.Classifications.from_sscma_micro_cls(message)
+                
+                annotated_frame = self.class_annotator.annotate(
+                        scene=annotated_frame, classifications=classifications, labels=device.model.classes
+                    )
+            
+            self.stream_callback(image_to_base64(annotated_frame))
 
         
     def on_monitor_stream(self, callback):
