@@ -115,6 +115,7 @@ class SScmaLocal():
         self.connectEvent.set()
 
     def stop(self):
+        self.device.loop_stop()
         if self.mqttClient:
             self.mqttClient.loop_stop()
             self.mqttClient.disconnect()

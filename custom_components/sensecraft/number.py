@@ -1,7 +1,7 @@
-"""Demo platform that offers a fake Number entity."""
+"""Number platform for SenseCraft integration."""
 from __future__ import annotations
 
-from homeassistant.components.number import NumberDeviceClass, NumberEntity, NumberMode
+from homeassistant.components.number import NumberEntity, NumberMode
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback

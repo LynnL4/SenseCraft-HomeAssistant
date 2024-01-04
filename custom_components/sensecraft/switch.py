@@ -23,12 +23,10 @@ async def async_setup_entry(
     config_entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    _LOGGER.info("I am here".center(100, '-'))
     data = hass.data[DOMAIN][config_entry.entry_id]
     data_source = data.get(DATA_SOURCE)
     if data_source == SSCMA:
         local: SScmaLocal = data[SSCMA_LOCAL]
-        _LOGGER.info("I am here 2".center(100, '-'))
         async_add_entities([
             sscmaSwitch(local.deviceId, local.deviceName,
                         local.trace, config_entry.entry_id, "Trace"),

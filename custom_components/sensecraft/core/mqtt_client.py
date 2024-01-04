@@ -28,7 +28,7 @@ class MQTTClient:
             logging.error(f"mqtt connect failed with result code {rc}")
 
     def on_disconnect(self, client, userdata, rc):
-        logging.info('mqtt disconnect', self.broker)
+        logging.info(f"mqtt disconnect {rc}")
 
     def on_message(self, client, userdata, msg):
         if self.message_received is not None:
