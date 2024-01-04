@@ -20,7 +20,7 @@ from .core.sensecraft_cloud import SenseCraftCloud
 from .core.sensecraft_local import SenseCraftLocal
 from .core.sscma_local import SScmaLocal
 
-PLATFORMS = [Platform.CAMERA, Platform.SENSOR, Platform.NUMBER, Platform.SELECT]
+PLATFORMS = [Platform.CAMERA, Platform.SENSOR, Platform.NUMBER, Platform.SELECT, Platform.SWITCH]
 
 async def async_setup_entry(
     hass: HomeAssistant, entry: config_entries.ConfigEntry

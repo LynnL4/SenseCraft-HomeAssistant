@@ -1,4 +1,4 @@
-"""Select platform for Advantage Air integration."""
+"""Select platform for SenseCraft  integration."""
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
